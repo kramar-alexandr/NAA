@@ -1,0 +1,132 @@
+SourceFile("halcust/level0",0);
+SourceFile("halcust/level0/Documents",0);
+SourceFile("halcust/level0/Exports",0);
+SourceFile("halcust/level0/Maint",0);
+SourceFile("halcust/level0/Printers",0);
+SourceFile("halcust/level0/RActions",0);
+SourceFile("halcust/level0/Reports",0);
+SourceFile("halcust/level0/Tools",0);
+SourceFile("halcust/level0/WActions",0);
+SourceFile("halcust/level0/WebNG",0);
+SourceFile("halcust/WebNG", 3);
+SourceFile("halcust/LIT", 3);
+SourceFile("halcust/LAT", 3);
+SourceFile("halcust/ENG", 3);// Edit ************************** BPI Ukraine - KramarAlexandr - четвер, 16 листопада 2017 р. о 09:23:00
+SourceFile("halcust/RActions", 3);
+SourceFile("halcust/Reports", 3);
+SourceFile("halcust/Exports", 3);
+SourceFile("halcust/WActions", 3);
+SourceFile("halcust/Web", 3);
+SourceFile("halcust/WebNG", 3);
+SourceFile("halcust/Swedbank",3);// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 29 May 2018 13:02:23
+
+
+begin
+  	
+ 	RecordBegin(SwedbankImportVc,-,"");// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 29 May 2018 15:32:23
+		RecordField(NtryRef,M4Code,50,0);
+		RecordField(OwnID,M4Code,50,0);
+		RecordField(BankID,M4Code,50,0);
+		RecordField(BookgDt,M4Date,0,0);
+		RecordField(CdtDbtInd,M4Code,10,0);
+		RecordField(AmtCcy,M45Val,0,0);
+		RecordField(RvslInd,M4Int,0,0);
+		RecordField(CurncyCode,M4Code,20,0);
+		RecordField(IBAN,M4Code,50,0);
+		RecordField(Ustrd,M4Str,250,0);
+		RecordField(IPNr,M4Long,0,0);
+		RecordField(RecName,M4Str,255,0);
+		RecordField(OrgId,M4Code,50,0);
+		RecordField(PrvtId,M4Code,50,0);
+		RecordField(PayType,M4Str,50,0);
+		
+		MainKeyBegin(NtryRef,0);
+  	KeySegment(NtryRef);
+  	KeySegment(BankID);
+  	KeySegment(OwnID);
+  	
+  	KeyBegin(BookgDt);
+  	KeySegment(BookgDt);
+  	KeySegment(NtryRef);
+  	KeySegment(BankID);
+  	KeySegment(OwnID);
+  	
+  	KeyBegin(CdtDbtInd);
+  	KeySegment(CdtDbtInd);
+  	KeySegment(NtryRef);
+  	KeySegment(BankID);
+  	KeySegment(OwnID);
+	EndRecord;
+	
+	RecordBegin(SEBbankImportVc,-,"");// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 29 May 2018 15:32:20
+		RecordField(NtryRef,M4Code,50,0);
+		RecordField(OwnID,M4Code,50,0);
+		RecordField(BankID,M4Code,50,0);
+		RecordField(BookgDt,M4Date,0,0);
+		RecordField(CdtDbtInd,M4Code,10,0);
+		RecordField(AmtCcy,M45Val,0,0);
+		RecordField(RvslInd,M4Int,0,0);
+		RecordField(CurncyCode,M4Code,20,0);
+		RecordField(IBAN,M4Code,50,0);
+		RecordField(Ustrd,M4Str,250,0);
+		RecordField(IPNr,M4Long,0,0);
+		RecordField(RecName,M4Str,255,0);
+		RecordField(OrgId,M4Code,50,0);
+		RecordField(PrvtId,M4Code,50,0);
+		RecordField(PayType,M4Str,50,0);
+		
+		MainKeyBegin(NtryRef,0);
+  	KeySegment(NtryRef);
+  	KeySegment(BankID);
+  	KeySegment(OwnID);
+  	
+  	KeyBegin(BookgDt);
+  	KeySegment(BookgDt);
+  	KeySegment(NtryRef);
+  	KeySegment(BankID);
+  	KeySegment(OwnID);
+  	
+  	KeyBegin(CdtDbtInd);
+  	KeySegment(CdtDbtInd);
+  	KeySegment(NtryRef);
+  	KeySegment(BankID);
+  	KeySegment(OwnID);
+	EndRecord;
+	
+	RecordBegin(LuminorImportVc,-,"");// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 29 May 2018 15:32:20
+		RecordField(NtryRef,M4Code,50,0);
+		RecordField(OwnID,M4Code,50,0);
+		RecordField(BankID,M4Code,50,0);
+		RecordField(BookgDt,M4Date,0,0);
+		RecordField(CdtDbtInd,M4Code,10,0);
+		RecordField(AmtCcy,M45Val,0,0);
+		RecordField(RvslInd,M4Int,0,0);
+		RecordField(CurncyCode,M4Code,20,0);
+		RecordField(IBAN,M4Code,50,0);
+		RecordField(Ustrd,M4Str,250,0);
+		RecordField(IPNr,M4Long,0,0);
+		RecordField(RecName,M4Str,255,0);
+		RecordField(OrgId,M4Code,50,0);
+		RecordField(PrvtId,M4Code,50,0);
+		RecordField(PayType,M4Str,50,0);
+		
+		MainKeyBegin(NtryRef,0);
+  	KeySegment(NtryRef);
+  	KeySegment(BankID);
+  	KeySegment(OwnID);
+  	
+  	KeyBegin(BookgDt);
+  	KeySegment(BookgDt);
+  	KeySegment(NtryRef);
+  	KeySegment(BankID);
+  	KeySegment(OwnID);
+  	
+  	KeyBegin(CdtDbtInd);
+  	KeySegment(CdtDbtInd);
+  	KeySegment(NtryRef);
+  	KeySegment(BankID);
+  	KeySegment(OwnID);
+	EndRecord;
+ 	
+return;
+end;

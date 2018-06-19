@@ -1,0 +1,13 @@
+event startup
+begin
+
+  Import("NAA - SwedBank import Statement",SwedBankImportSTIClass,SwedBankImportSTIn,modSL);// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 5 June 2018 14:21:48
+  Import("NAA - SEB Bank import Statement",SEBBankImportSTIClass,SEBBankImportSTIn,modSL);// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 5 June 2018 14:21:51
+  Import("NAA - Luminor import Statement",LuminorImportSTIClass,LuminorImportSTIn,modSL);// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 5 June 2018 14:21:51
+
+	Setting("NAA - SwedBank import Statement",SwedbankImportLClass,modSL);// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 5 June 2018 14:21:53
+	Setting("NAA - SEB Bank import Statement",SEBbankImportLClass,modSL);// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 5 June 2018 14:21:55
+	Setting("NAA - Luminor import Statement",LuminorImportLClass,modSL);// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 5 June 2018 14:21:55
+
+  return;
+end;
