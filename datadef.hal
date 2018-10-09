@@ -22,7 +22,19 @@ SourceFile("halcust/Swedbank",3);// Edit ************************** BPI Ukraine 
 
 
 begin
-  	
+  
+  BlockBegin(BankImportSetBlock,-,"");// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 9 October 2018 11:56:25
+		RecordField(ImpPaym,M4Int,0,0);
+		RecordField(ImpPaymOrd,M4Int,0,0);
+		RecordField(ImpCharges,M4Int,0,0);
+		RecordField(DefPayModeSW,M4Code,5,0);
+		RecordField(DefPayModeSEB,M4Code,5,0);
+		RecordField(DefPayModeLUM,M4Code,5,0);
+		RecordField(DefPayModeSIA,M4Code,5,0);
+		RecordField(DefSearchInv,M4Int,0,0);
+		RecordField(InvFIFO,M4Int,0,0);
+	EndBlock;	
+  
  	RecordBegin(SwedbankImportVc,-,"");// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 29 May 2018 15:32:23
 		RecordField(NtryRef,M4Code,50,0);
 		RecordField(OwnID,M4Code,50,0);

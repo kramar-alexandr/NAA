@@ -224,3 +224,23 @@ begin
   EndWindow;
   
 end;  
+
+
+window BankImportSetTClass:1// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 9 October 2018 16:04:23
+  wtag("language","LIT"), wtag("product","*"), wtag("productcode","*"), wtag("device","computer")
+begin
+  real h,v,vm,vs;
+  v = 6; vs = 20; h = 90;
+
+  WindowBegin("Amoralle - Banking Statement Import settings",BankImportSetTClass,CGSbl,-);
+  SetWRect(20,80,450,480);
+  SetBlid(BankImportSetBlock);
+  Sizeable(-1,-1,0,0);
+  	h = 50;
+		v=v+20;
+		ButtonFrame(h,v=v+20,210,2,"Import is done by connecting");
+		RadioButton(h,v,0,0,"The oldest invoices (FIFO method)",InvFIFO);
+		RadioButton(h,v+=16,1,0,"The oldest due dates",InvFIFO);
+  EndWindow;
+
+end;

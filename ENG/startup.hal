@@ -8,6 +8,6 @@ begin
 	Setting("NAA - SwedBank import Statement",SwedbankImportLClass,modSL);// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 5 June 2018 14:21:53
 	Setting("NAA - SEB Bank import Statement",SEBbankImportLClass,modSL);// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 5 June 2018 14:21:55
 	Setting("NAA - Luminor import Statement",LuminorImportLClass,modSL);// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 5 June 2018 14:21:55
-
+  Setting("NAA - Banking Statement Import settings",BankImportSetTClass,modSL);// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 9 October 2018 15:59:21
   return;
 end;
