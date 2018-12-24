@@ -237,6 +237,26 @@ begin
   SetBlid(BankImportSetBlock);
   Sizeable(-1,-1,0,0);
   	h = 50;
+  	CheckBox(h,v+=20,0,"Import payments",ImpPaym);
+  	CheckBox(h,v+=20,0,"Import payment orders",ImpPaymOrd);
+  	CheckBox(h,v+=20,0,"Import charges",ImpCharges);
+  	v = v + 3*vs;
+  	h=h+150;
+		EditField(h,v+=vs,50,"Swedbank Payment mode",Normal,DefPayModeSW,false,PMSClass);
+		EditField(h,v+=vs,50,"SEB Bank Payment mode",Normal,DefPayModeSEB,false,PMSClass);
+		EditField(h,v+=vs,50,"Luminor bank Payment mode",Normal,DefPayModeLUM,false,PMSClass);
+		EditField(h,v+=vs,50,"Siauliu Bank Payment mode",Normal,DefPayModeSIA,false,PMSClass); 
+		
+		v=v-vs*4;
+	  StaticText(h+80,v+vs-5,"Purchase PM",false);
+		EditField(h+80,v+=vs,50,"",Normal,DefVEPayModeSW,false,PMSClass);
+		EditField(h+80,v+=vs,50,"",Normal,DefVEPayModeSEB,false,PMSClass);
+		EditField(h+80,v+=vs,50,"",Normal,DefVEPayModeLUM,false,PMSClass);
+		EditField(h+80,v+=vs,50,"",Normal,DefVEPayModeSIA,false,PMSClass); 
+		
+		ButtonFrame(h,v=vm+20,150,2,"Primary invoice search method");
+		RadioButton(h,v,0,0,"Invoice no.",DefSearchInv);
+		RadioButton(h,v+=16,1,0,"Offcial ser. No",DefSearchInv);
 		v=v+20;
 		ButtonFrame(h,v=v+20,210,2,"Import is done by connecting");
 		RadioButton(h,v,0,0,"The oldest invoices (FIFO method)",InvFIFO);

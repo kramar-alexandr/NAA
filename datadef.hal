@@ -33,6 +33,10 @@ begin
 		RecordField(DefPayModeSIA,M4Code,5,0);
 		RecordField(DefSearchInv,M4Int,0,0);
 		RecordField(InvFIFO,M4Int,0,0);
+		RecordField(DefVEPayModeSW,M4Code,5,0);
+		RecordField(DefVEPayModeSEB,M4Code,5,0);
+		RecordField(DefVEPayModeLUM,M4Code,5,0);
+		RecordField(DefVEPayModeSIA,M4Code,5,0);
 	EndBlock;	
   
  	RecordBegin(SwedbankImportVc,-,"");// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 29 May 2018 15:32:23
@@ -51,6 +55,7 @@ begin
 		RecordField(OrgId,M4Code,50,0);
 		RecordField(PrvtId,M4Code,50,0);
 		RecordField(PayType,M4Str,50,0);
+		RecordField(OPNr,M4Long,0,0);
 		
 		MainKeyBegin(NtryRef,0);
   	KeySegment(NtryRef);
@@ -86,6 +91,7 @@ begin
 		RecordField(OrgId,M4Code,50,0);
 		RecordField(PrvtId,M4Code,50,0);
 		RecordField(PayType,M4Str,50,0);
+		RecordField(OPNr,M4Long,0,0);
 		
 		MainKeyBegin(NtryRef,0);
   	KeySegment(NtryRef);
@@ -118,6 +124,43 @@ begin
 		RecordField(Ustrd,M4Str,250,0);
 		RecordField(IPNr,M4Long,0,0);
 		RecordField(RecName,M4Str,255,0);
+		RecordField(OrgId,M4Code,50,0);
+		RecordField(PrvtId,M4Code,50,0);
+		RecordField(PayType,M4Str,50,0);
+		RecordField(OPNr,M4Long,0,0);
+		
+		MainKeyBegin(NtryRef,0);
+  	KeySegment(NtryRef);
+  	KeySegment(BankID);
+  	KeySegment(OwnID);
+  	
+  	KeyBegin(BookgDt);
+  	KeySegment(BookgDt);
+  	KeySegment(NtryRef);
+  	KeySegment(BankID);
+  	KeySegment(OwnID);
+  	
+  	KeyBegin(CdtDbtInd);
+  	KeySegment(CdtDbtInd);
+  	KeySegment(NtryRef);
+  	KeySegment(BankID);
+  	KeySegment(OwnID);
+	EndRecord;
+	
+	RecordBegin(SiauliuImportVc,-,"");// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 10 September 2018 15:43:12
+		RecordField(NtryRef,M4Code,50,0);
+		RecordField(OwnID,M4Code,50,0);
+		RecordField(BankID,M4Code,50,0);
+		RecordField(BookgDt,M4Date,0,0);
+		RecordField(CdtDbtInd,M4Code,10,0);
+		RecordField(AmtCcy,M45Val,0,0);
+		RecordField(RvslInd,M4Int,0,0);
+		RecordField(CurncyCode,M4Code,20,0);
+		RecordField(IBAN,M4Code,50,0);
+		RecordField(Ustrd,M4Str,250,0);
+		RecordField(IPNr,M4Long,0,0);
+		RecordField(RecName,M4Str,255,0);
+		RecordField(OPNr,M4Long,0,0);
 		RecordField(OrgId,M4Code,50,0);
 		RecordField(PrvtId,M4Code,50,0);
 		RecordField(PayType,M4Str,50,0);

@@ -9,6 +9,10 @@ external inner function Boolean PasteInvIn2OPr(var record OPVc,Integer,Date,Inte
 external inner procedure OPVc_PasteBankCurncy(var record OPVc,Integer);
 external inner procedure OPVc_PasteRecVal(var record OPVc,Integer);
 external inner procedure OPVc_PasteVECode(var record OPVc,Integer);
+external updating procedure AsyncSwedBankImportSTIn(area);
+external updating procedure AsyncSEBBankImportSTIn(area);
+external updating procedure AsyncLuminorImportSTIn(area);
+external updating procedure AsyncSiauliuImportSTIn(area);
 
 global function string 255 ConvertNameToSet(string name)
 begin
@@ -214,6 +218,15 @@ begin
 			resetloop(CUr);
 		end;
 	end;
+	
+	/*if(cufnd==false)then begin
+		RecordClear(Letr);
+		AddToText(cuname,Letr);
+
+		CUr.Name = "";
+	
+	end;*/
+	
 return;
 end;
 
@@ -230,16 +243,14 @@ begin
 	LongInt error;
 	record BaseCurBlock BCb;
 	vector boolean invused;
+	boolean primsearch;
 	record BankImportSetBlock BISb;
 	record LetVc Letr;
 	string 50 keyname;
 	
-	blockload(BISb);
 	blockload(BCb);
-	
-	RecordClear(Letr);
-	AddToText(origcomm,Letr);
-	
+	blockload(BISb);
+		
 	if(blank(CurncyCode))then begin
 		CurncyCode = BCb.BaseCur1;
 	end;
@@ -252,48 +263,26 @@ begin
 									
 			if(TrHs)then begin
 				if(remsum>0)then begin
-					if(setinset(ARr.InvoiceNr,instr) or StringInText(ARr.InvoiceNr,Letr))then begin
-						clearrow(IPr,IPrw,1);
-						IPrw.InvoiceNr = ARr.InvoiceNr;
-						matrowput(IPr,k,IPrw);
-						PasteInvIn2IPr(IPr,k,IPr.TransDate,chk,false,installmentf);
-						matrowget(IPr,k,IPrw);
-						invused[IPrw.InvoiceNr] = true;
-						IPrw.CustName = RecName;
-						IPrw.RecCurncy = CurncyCode;
-						IPrw.BankCurncy = CurncyCode;
-						IPrw.PayDate = IPr.TransDate;
-						IPrw.PayDate =IPr.TransDate;
-						matrowput(IPr,k,IPrw);
-						IPVc_PasteBankCurncy(IPr,k);
-						matrowget(IPr,k,IPrw);
-						if(IPrw.BankVal>=remsum)then begin
-							IPrw.BankVal = remsum;
-							IPrw.RecVal = remsum;
-							IPrw.RecCurncy = CurncyCode;
-							IPrw.BankCurncy = CurncyCode;
-							IPrw.PayDate = IPr.TransDate;
-							IPrw.PayDate =IPr.TransDate;
-							matrowput(IPr,k,IPrw);
-							IPVc_PasteRecVal(IPr,k);
-							matrowget(IPr,k,IPrw);
-							remsum = 0;
-						end;
-						if(IPrw.RecVal<remsum)then begin
-							IPrw.BankVal = IPrw.RecVal;
-							IPrw.RecVal = IPrw.RecVal;
-							IPrw.RecCurncy = CurncyCode;
-							IPrw.BankCurncy = CurncyCode;
-							IPrw.PayDate = IPr.TransDate;
-							IPrw.PayDate =IPr.TransDate;
-							matrowput(IPr,k,IPrw);
-							IPVc_PasteRecVal(IPr,k);
-							matrowget(IPr,k,IPrw);
-							remsum = remsum - IPrw.RecVal;
-						end;
-						k=k+1;
+					
+					primsearch = false;
+					if(BISb.DefSearchInv==0)then begin
+						primsearch = setinset(ARr.InvoiceNr,instr);
+					end else begin
+						primsearch = setinset(ARr.OfficialSerNr,instr) and nonblank(ARr.OfficialSerNr);
 					end;
-					if((setinset(ARr.OfficialSerNr,instr) or StringInText(ARr.OfficialSerNr,Letr)) and nonblank(ARr.OfficialSerNr))then begin
+					if(primsearch==false)then begin
+						RecordClear(Letr);
+						AddToText(origcomm,Letr);
+
+						if(BISb.DefSearchInv==1)then begin
+							primsearch = StringInText(ARr.InvoiceNr,Letr);
+						end else begin
+							primsearch = StringInText(ARr.OfficialSerNr,Letr) and nonblank(ARr.OfficialSerNr);
+						end;
+					end;
+					
+					
+					if(primsearch)then begin
 						clearrow(IPr,IPrw,1);
 						IPrw.InvoiceNr = ARr.InvoiceNr;
 						matrowput(IPr,k,IPrw);
@@ -339,8 +328,77 @@ begin
 		end;
 		resetloop(ARr);
 		
-		if(remsum>0)then begin
-			ARr.CustCode = cucode;
+		ARr.CustCode = cucode;
+		TrHs = true;
+		while(loopkey("CustCode",ARr,1,TrHs))begin
+			if(ARr.CustCode!=cucode)then begin TrHs = false; end;
+			if(TrHs)then begin
+				if(remsum>0)then begin
+					primsearch = false;
+					if(BISb.DefSearchInv==1)then begin
+						primsearch = setinset(ARr.InvoiceNr,instr);
+					end else begin
+						primsearch = setinset(ARr.OfficialSerNr,instr) and nonblank(ARr.OfficialSerNr);
+					end;
+					if(primsearch==false)then begin
+						RecordClear(Letr);
+						AddToText(origcomm,Letr);
+
+						if(BISb.DefSearchInv==1)then begin
+							primsearch = StringInText(ARr.InvoiceNr,Letr);
+						end else begin
+							primsearch = StringInText(ARr.OfficialSerNr,Letr) and nonblank(ARr.OfficialSerNr);
+						end;
+					end;
+					
+					if(primsearch)then begin
+						clearrow(IPr,IPrw,1);
+						IPrw.InvoiceNr = ARr.InvoiceNr;
+						matrowput(IPr,k,IPrw);
+						PasteInvIn2IPr(IPr,k,IPr.TransDate,chk,false,installmentf);
+						matrowget(IPr,k,IPrw);
+						invused[IPrw.InvoiceNr] = true;
+						IPrw.CustName = RecName;
+						IPrw.RecCurncy = CurncyCode;
+						IPrw.BankCurncy = CurncyCode;
+						IPrw.PayDate = IPr.TransDate;
+						IPrw.PayDate =IPr.TransDate;
+						matrowput(IPr,k,IPrw);
+						IPVc_PasteBankCurncy(IPr,k);
+						matrowget(IPr,k,IPrw);
+						if(IPrw.BankVal>=remsum)then begin
+							IPrw.BankVal = remsum;
+							IPrw.RecVal = remsum;
+							IPrw.RecCurncy = CurncyCode;
+							IPrw.BankCurncy = CurncyCode;
+							IPrw.PayDate = IPr.TransDate;
+							IPrw.PayDate =IPr.TransDate;
+							matrowput(IPr,k,IPrw);
+							IPVc_PasteRecVal(IPr,k);
+							matrowget(IPr,k,IPrw);
+							remsum = 0;
+						end;
+						if(IPrw.RecVal<remsum)then begin
+							IPrw.BankVal = IPrw.RecVal;
+							IPrw.RecVal = IPrw.RecVal;
+							IPrw.RecCurncy = CurncyCode;
+							IPrw.BankCurncy = CurncyCode;
+							IPrw.PayDate = IPr.TransDate;
+							IPrw.PayDate =IPr.TransDate;
+							matrowput(IPr,k,IPrw);
+							IPVc_PasteRecVal(IPr,k);
+							matrowget(IPr,k,IPrw);
+							remsum = remsum - IPrw.RecVal;
+						end;
+						k=k+1;
+					end;
+				end;
+			end;
+		end;
+		resetloop(ARr);
+		
+		if(remsum>0)then begin// Edit ************************** BPI Ukraine - KramarAlexandr - Tuesday, 9 October 2018 11:45:58
+			
 			TrHs = true;
 			if(BISb.InvFIFO==0)then begin
 				ARr.CustCode = cucode;
@@ -350,6 +408,7 @@ begin
 				ARr.CustCode = cucode;
 				keyname = "CustDue";
 			end;
+			
 			while(loopkey(keyname,ARr,1,TrHs))begin
 				testf = true;
 				if(ARr.CustCode!=cucode)then begin TrHs = false; testf = false; end;
@@ -405,7 +464,23 @@ begin
 		while(loopkey("CustCode",ARr,1,TrHs))begin												
 			if(TrHs)then begin
 				if(remsum>0)then begin
-					if(setinset(ARr.InvoiceNr,instr) or StringInText(ARr.InvoiceNr,Letr))then begin
+					primsearch = false;
+					if(BISb.DefSearchInv==0)then begin
+						primsearch = setinset(ARr.InvoiceNr,instr);
+					end else begin
+						primsearch = setinset(ARr.OfficialSerNr,instr) and nonblank(ARr.OfficialSerNr);
+					end;
+					if(primsearch==false)then begin
+						RecordClear(Letr);
+						AddToText(origcomm,Letr);
+
+						if(BISb.DefSearchInv==1)then begin
+							primsearch = StringInText(ARr.InvoiceNr,Letr);
+						end else begin
+							primsearch = StringInText(ARr.OfficialSerNr,Letr) and nonblank(ARr.OfficialSerNr);
+						end;
+					end;
+					if(primsearch)then begin
 						clearrow(IPr,IPrw,1);
 						IPrw.InvoiceNr = ARr.InvoiceNr;
 						matrowput(IPr,k,IPrw);
@@ -445,7 +520,33 @@ begin
 						end;
 						k=k+1;	
 					end;
-					if((setinset(ARr.OfficialSerNr,instr) or StringInText(ARr.OfficialSerNr,Letr)) and nonblank(ARr.OfficialSerNr))then begin
+				end;
+			end;
+		end;
+		resetloop(ARr);
+		
+		TrHs = true;
+		ARr.CustCode = "";
+		while(loopkey("CustCode",ARr,1,TrHs))begin												
+			if(TrHs)then begin
+				if(remsum>0)then begin
+					primsearch = false;
+					if(BISb.DefSearchInv==1)then begin
+						primsearch = setinset(ARr.InvoiceNr,instr);
+					end else begin
+						primsearch = setinset(ARr.OfficialSerNr,instr) and nonblank(ARr.OfficialSerNr);
+					end;
+					if(primsearch==false)then begin
+						RecordClear(Letr);
+						AddToText(origcomm,Letr);
+
+						if(BISb.DefSearchInv==1)then begin
+							primsearch = StringInText(ARr.InvoiceNr,Letr);
+						end else begin
+							primsearch = StringInText(ARr.OfficialSerNr,Letr) and nonblank(ARr.OfficialSerNr);
+						end;
+					end;
+					if(primsearch)then begin
 						clearrow(IPr,IPrw,1);
 						IPrw.InvoiceNr = ARr.InvoiceNr;
 						matrowput(IPr,k,IPrw);
@@ -534,5 +635,300 @@ begin
 		end;
 	end;
 	
+return;
+end;
+
+
+global procedure BankFillOProws(var record OPVc OPr,var integer k,string RecName,string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm)
+begin
+	row OPVc OPrw;
+	boolean installmentf;
+	val chk;
+	record APVc APr;
+	boolean TrHs;
+	record CUVc CUr;
+	LongInt error;
+	string 255 warning;
+	boolean primsearch;
+	record BankImportSetBlock BISb;
+	record LetVc Letr;
+	string 50 keyname;
+	
+	blockload(BISb);
+	
+	if(nonblank(cucode))then begin
+		APr.VECode = cucode;
+		TrHs = true;
+		while(loopkey("VECode",APr,1,TrHs))begin
+			if(APr.VECode!=cucode)then begin TrHs = false; end;
+									
+			if(TrHs)then begin
+				if(remsum>0)then begin
+					
+					primsearch = false;
+					primsearch = setinset(APr.SerNr,instr);
+					if(primsearch==false)then begin
+						primsearch = setinset(APr.InvoiceNr,instr) and nonblank(APr.InvoiceNr);
+					end;
+					if(primsearch==false)then begin
+						RecordClear(Letr);
+						AddToText(origcomm,Letr);
+
+						primsearch = StringInText(APr.SerNr,Letr);
+						if(primsearch==false)then begin
+							primsearch = StringInText(APr.InvoiceNr,Letr) and nonblank(APr.InvoiceNr);
+						end;
+					end;
+					logtext(0,origcomm & " " & primsearch);
+					if(primsearch)then begin
+						clearrow(OPr,OPrw,1);
+						OPrw.VISerNr = APr.SerNr;
+						matrowput(OPr,k,OPrw);
+						PasteInvIn2OPr(OPr,k,OPr.TransDate,1,chk,warning,false,installmentf);
+						matrowget(OPr,k,OPrw);
+						OPrw.Comment = RecName;
+						OPrw.RecCurncy = CurncyCode;
+						matrowput(OPr,k,OPrw);
+						OPVc_PasteBankCurncy(OPr,k);
+						matrowget(OPr,k,OPrw);
+						if(OPrw.BankVal>=remsum)then begin
+							OPrw.BankVal = remsum;
+							OPrw.RecVal = remsum;
+							matrowput(OPr,k,OPrw);
+							OPVc_PasteRecVal(OPr,k);
+							matrowget(OPr,k,OPrw);
+							remsum = 0;
+						end;
+						if(OPrw.RecVal<remsum)then begin
+							OPrw.BankVal = OPrw.RecVal;
+							OPrw.RecVal = OPrw.RecVal;
+							matrowput(OPr,k,OPrw);
+							OPVc_PasteRecVal(OPr,k);
+							matrowget(OPr,k,OPrw);
+							remsum = remsum - OPrw.RecVal;
+						end;
+						k=k+1;
+					end;
+				end;
+			end;
+		end;
+		resetloop(APr);
+	end else begin
+		TrHs = true;
+		APr.VECode = "";
+		while(loopkey("VECode",APr,1,TrHs))begin												
+			if(TrHs)then begin
+				if(remsum>0)then begin
+					primsearch = false;
+					primsearch = setinset(APr.SerNr,instr);
+					if(primsearch==false)then begin
+						primsearch = setinset(APr.InvoiceNr,instr) and nonblank(APr.InvoiceNr);
+					end;
+					if(primsearch==false)then begin
+						RecordClear(Letr);
+						AddToText(origcomm,Letr);
+
+						primsearch = StringInText(APr.SerNr,Letr);
+						if(primsearch==false)then begin
+							primsearch = StringInText(APr.InvoiceNr,Letr) and nonblank(APr.InvoiceNr);
+						end;
+					end;
+					
+					
+					if(setinset(APr.SerNr,instr))then begin
+						clearrow(OPr,OPrw,1);
+						OPrw.VISerNr = APr.SerNr;
+						matrowput(OPr,k,OPrw);
+						PasteInvIn2OPr(OPr,k,OPr.TransDate,1,chk,warning,false,installmentf);
+						matrowget(OPr,k,OPrw);
+						OPrw.Comment = RecName;
+						OPrw.RecCurncy = CurncyCode;
+						matrowput(OPr,k,OPrw);
+						OPVc_PasteBankCurncy(OPr,k);
+						matrowget(OPr,k,OPrw);
+						if(OPrw.BankVal>=remsum)then begin
+							OPrw.BankVal = remsum;
+							OPrw.RecVal = remsum;
+							matrowput(OPr,k,OPrw);
+							OPVc_PasteRecVal(OPr,k);
+							matrowget(OPr,k,OPrw);
+							remsum = 0;
+						end;
+						if(OPrw.RecVal<remsum)then begin
+							OPrw.BankVal = OPrw.RecVal;
+							OPrw.RecVal = OPrw.RecVal;
+							matrowput(OPr,k,OPrw);
+							OPVc_PasteRecVal(OPr,k);
+							matrowget(OPr,k,OPrw);
+							remsum = remsum - OPrw.RecVal;
+						end;
+						k=k+1;
+					end;
+					if(setinset(APr.InvoiceNr,instr) and nonblank(APr.InvoiceNr))then begin
+						clearrow(OPr,OPrw,1);
+						OPrw.VISerNr = APr.SerNr;
+						matrowput(OPr,k,OPrw);
+						PasteInvIn2OPr(OPr,k,OPr.TransDate,1,chk,warning,false,installmentf);
+						matrowget(OPr,k,OPrw);
+						OPrw.Comment = RecName;
+						OPrw.RecCurncy = CurncyCode;
+						matrowput(OPr,k,OPrw);
+						OPVc_PasteBankCurncy(OPr,k);
+						matrowget(OPr,k,OPrw);
+						if(OPrw.BankVal>=remsum)then begin
+							OPrw.BankVal = remsum;
+							OPrw.RecVal = remsum;
+							matrowput(OPr,k,OPrw);
+							OPVc_PasteRecVal(OPr,k);
+							matrowget(OPr,k,OPrw);
+							remsum = 0;
+						end;
+						if(OPrw.RecVal<remsum)then begin
+							OPrw.BankVal = OPrw.RecVal;
+							OPrw.RecVal = OPrw.RecVal;
+							matrowput(OPr,k,OPrw);
+							OPVc_PasteRecVal(OPr,k);
+							matrowget(OPr,k,OPrw);
+							remsum = remsum - OPrw.RecVal;
+						end;
+						k=k+1;
+					end;
+				end;
+			end;
+		end;
+		resetloop(APr);
+	end;
+
+	if(remsum>0)then begin
+		if(cufnd)then begin
+			clearrow(OPr,OPrw,1);
+			CUr.Code = cucode;
+			readfirstmain(CUr,1,true);
+			clearrow(OPr,OPrw,1);
+			OPrw.VECode = CUr.Code;
+			matrowput(OPr,k,OPrw);
+			OPVc_PasteVECode(OPr,k);
+			matrowget(OPr,k,OPrw);
+			OPrw.RecCurncy = CurncyCode;
+			matrowput(OPr,k,OPrw);
+			OPVc_PasteBankCurncy(OPr,k);
+			matrowget(OPr,k,OPrw);
+			OPrw.RecVal = remsum;
+			OPrw.BankVal = remsum;
+			OPrw.Comment = RecName;
+			matrowput(OPr,k,OPrw);
+			OPVc_PasteRecVal(OPr,k);
+		end else begin
+			clearrow(OPr,OPrw,1);
+			OPrw.BankCurncy = CurncyCode;
+			matrowput(OPr,k,OPrw);
+			OPVc_PasteBankCurncy(OPr,k);
+			matrowget(OPr,k,OPrw);
+			OPrw.BankVal = remsum;
+			OPrw.RecVal = remsum;
+			OPrw.Comment = RecName;
+			matrowput(OPr,k,OPrw);
+			OPVc_PasteRecVal(OPr,k);
+		end;
+	end;
+	
+return;
+end;
+
+external updating procedure AsyncSEBBankImportSTIn(area);
+external updating procedure AsyncLuminorImportSTIn(area);
+external updating procedure AsyncSiauliuImportSTIn(area);
+
+
+
+global updating procedure SwedBankImportSTIn()
+begin
+	area axml;
+	xml xdata;
+	string 255 xkey,crncy,tstr,OwnID,BankID,NtryRef,AmtCcy,CurCode,CdtDbtInd,bookdate,impfilename;
+	longint cntchld,i,dcf;
+	date ndat;
+	area afile;
+	
+	logtext(0,"SwedBankImportSTIn " & GetImportFileName);
+	
+	//xdata = ParseXMLFile(GetImportFileName);
+	addfiletoarea(GetImportFileName,afile,0);
+		
+	while (TestEOF==false) begin
+    if (NextImportLine(true)) then begin
+    end;
+  end;
+  queued.AsyncSwedBankImportSTIn(afile);
+		
+return;
+end;
+
+global updating procedure SEBBankImportSTIn()
+begin
+	area axml;
+	xml xdata;
+	string 255 xkey,crncy,tstr,OwnID,BankID,NtryRef,AmtCcy,CurCode,CdtDbtInd,bookdate,impfilename;
+	longint cntchld,i,dcf;
+	date ndat;
+	area afile;
+	
+	logtext(0,"SEBBankImportSTIn " & GetImportFileName);
+	
+	//xdata = ParseXMLFile(GetImportFileName);
+	addfiletoarea(GetImportFileName,afile,0);
+		
+	while (TestEOF==false) begin
+    if (NextImportLine(true)) then begin
+    end;
+  end;
+  queued.AsyncSEBBankImportSTIn(afile);
+		
+return;
+end;
+
+global updating procedure LuminorImportSTIn()
+begin
+	area axml;
+	xml xdata;
+	string 255 xkey,crncy,tstr,OwnID,BankID,NtryRef,AmtCcy,CurCode,CdtDbtInd,bookdate,impfilename;
+	longint cntchld,i,dcf;
+	date ndat;
+	area afile;
+	
+	logtext(0,"LuminorImportSTIn " & GetImportFileName);
+	
+	//xdata = ParseXMLFile(GetImportFileName);
+	addfiletoarea(GetImportFileName,afile,0);
+		
+	while (TestEOF==false) begin
+    if (NextImportLine(true)) then begin
+    end;
+  end;
+  queued.AsyncLuminorImportSTIn(afile);
+		
+return;
+end;
+
+global updating procedure SiauliuImportSTIn()
+begin
+	area axml;
+	xml xdata;
+	string 255 xkey,crncy,tstr,OwnID,BankID,NtryRef,AmtCcy,CurCode,CdtDbtInd,bookdate,impfilename;
+	longint cntchld,i,dcf;
+	date ndat;
+	area afile;
+	
+	logtext(0,"SiauliuImportSTIn " & GetImportFileName);
+	
+	//xdata = ParseXMLFile(GetImportFileName);
+	addfiletoarea(GetImportFileName,afile,0);
+		
+	while (TestEOF==false) begin
+    if (NextImportLine(true)) then begin
+    end;
+  end;
+  queued.AsyncSiauliuImportSTIn(afile);
+		
 return;
 end;
