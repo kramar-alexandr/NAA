@@ -234,7 +234,7 @@ end;
 
 global procedure BankFillIProws(var record IPVc IPr,var integer k,string RecName,var string CurncyCode,var val remsum,string cucode,boolean cufnd,string instr,string origcomm)
 begin
-	row IPVc IPrw;
+	row IPVc IPrw,oldIPrw;
 	boolean installmentf;
 	val chk;
 	record ARVc ARr;
@@ -247,6 +247,27 @@ begin
 	record BankImportSetBlock BISb;
 	record LetVc Letr;
 	string 50 keyname;
+	record IPVc oldIPVc;
+	integer mtrw,i;
+	vector boolean invusedold;
+	vector val invusedoldsum;
+	
+	oldIPVc.OKMark = 0;
+	TrHs = true;
+	while(loopkey("OKMark",oldIPVc,1,TrHs))begin
+		if(oldIPVc.OKMark>0)then begin TrHs = false;	end;
+		
+		if(TrHs)then begin
+			mtrw = matrowcnt(oldIPVc);
+			For(i=0;i<mtrw;i=i+1) begin
+	  		matrowget(oldIPVc,i,oldIPrw);
+	  		if(oldIPrw.InvoiceNr>-1)then begin
+	  			invusedold[oldIPrw.InvoiceNr] = true;
+	  			invusedoldsum[oldIPrw.InvoiceNr] = invusedoldsum[oldIPrw.InvoiceNr] + oldIPrw.RecVal;
+	  		end;
+			end; 
+		end;
+	end;
 	
 	blockload(BCb);
 	blockload(BISb);
@@ -262,7 +283,7 @@ begin
 			if(ARr.CustCode!=cucode)then begin TrHs = false; end;
 									
 			if(TrHs)then begin
-				if(remsum>0)then begin
+				if(remsum>0 and ARr.BookRVal>0)then begin
 					
 					primsearch = false;
 					if(BISb.DefSearchInv==0)then begin
@@ -282,6 +303,11 @@ begin
 					end;
 					testf = primsearch;
 					if(invused[ARr.InvoiceNr]==true)then begin testf = false; end;
+					if(invusedold[ARr.InvoiceNr])then begin
+						if(ARr.BookRVal<=invusedoldsum[ARr.InvoiceNr])then begin
+							testf = false;
+						end;
+					end;
 					
 					if(testf)then begin
 						clearrow(IPr,IPrw,1);
@@ -301,6 +327,18 @@ begin
 						if(IPrw.BankVal>=remsum)then begin
 							IPrw.BankVal = remsum;
 							IPrw.RecVal = remsum;
+							
+							if(invusedold[ARr.InvoiceNr])then begin
+								if((ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])>0 and (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])<remsum)then begin
+									IPrw.BankVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+									IPrw.RecVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];	
+									remsum = remsum - ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+								end else begin
+									remsum = 0;
+								end;
+							end else begin
+								remsum = 0;
+							end;
 							IPrw.RecCurncy = CurncyCode;
 							IPrw.BankCurncy = CurncyCode;
 							IPrw.PayDate = IPr.TransDate;
@@ -308,7 +346,7 @@ begin
 							matrowput(IPr,k,IPrw);
 							IPVc_PasteRecVal(IPr,k);
 							matrowget(IPr,k,IPrw);
-							remsum = 0;
+							
 						end;
 						if(IPrw.RecVal<remsum)then begin
 							IPrw.BankVal = IPrw.RecVal;
@@ -316,7 +354,14 @@ begin
 							IPrw.RecCurncy = CurncyCode;
 							IPrw.BankCurncy = CurncyCode;
 							IPrw.PayDate = IPr.TransDate;
-							IPrw.PayDate =IPr.TransDate;
+							IPrw.PayDate = IPr.TransDate;
+							
+							if(invusedold[ARr.InvoiceNr])then begin
+								if((ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])>0 and (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])<remsum)then begin
+									IPrw.BankVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+									IPrw.RecVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];	
+								end;
+							end;
 							matrowput(IPr,k,IPrw);
 							IPVc_PasteRecVal(IPr,k);
 							matrowget(IPr,k,IPrw);
@@ -334,7 +379,7 @@ begin
 		while(loopkey("CustCode",ARr,1,TrHs))begin
 			if(ARr.CustCode!=cucode)then begin TrHs = false; end;
 			if(TrHs)then begin
-				if(remsum>0)then begin
+				if(remsum>0 and ARr.BookRVal>0)then begin
 					primsearch = false;
 					if(BISb.DefSearchInv==1)then begin
 						primsearch = setinset(ARr.InvoiceNr,instr);
@@ -354,6 +399,12 @@ begin
 					testf = primsearch;
 					if(invused[ARr.InvoiceNr]==true)then begin testf = false; end;
 					
+					if(invusedold[ARr.InvoiceNr])then begin
+						if(ARr.BookRVal<=invusedoldsum[ARr.InvoiceNr])then begin
+							testf = false;
+						end;
+					end;
+					
 					if(testf)then begin
 						clearrow(IPr,IPrw,1);
 						IPrw.InvoiceNr = ARr.InvoiceNr;
@@ -372,6 +423,17 @@ begin
 						if(IPrw.BankVal>=remsum)then begin
 							IPrw.BankVal = remsum;
 							IPrw.RecVal = remsum;
+							if(invusedold[ARr.InvoiceNr])then begin
+								if((ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])>0 and (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])<remsum)then begin
+									IPrw.BankVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+									IPrw.RecVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];	
+									remsum = remsum - ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+								end else begin
+									remsum = 0;
+								end;
+							end else begin
+								remsum = 0;
+							end;
 							IPrw.RecCurncy = CurncyCode;
 							IPrw.BankCurncy = CurncyCode;
 							IPrw.PayDate = IPr.TransDate;
@@ -379,11 +441,16 @@ begin
 							matrowput(IPr,k,IPrw);
 							IPVc_PasteRecVal(IPr,k);
 							matrowget(IPr,k,IPrw);
-							remsum = 0;
 						end;
 						if(IPrw.RecVal<remsum)then begin
 							IPrw.BankVal = IPrw.RecVal;
 							IPrw.RecVal = IPrw.RecVal;
+							if(invusedold[ARr.InvoiceNr])then begin
+								if((ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])>0 and (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])<remsum)then begin
+									IPrw.BankVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+									IPrw.RecVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];	
+								end;
+							end;
 							IPrw.RecCurncy = CurncyCode;
 							IPrw.BankCurncy = CurncyCode;
 							IPrw.PayDate = IPr.TransDate;
@@ -416,7 +483,13 @@ begin
 				testf = true;
 				if(ARr.CustCode!=cucode)then begin TrHs = false; testf = false; end;
 				if(invused[ARr.InvoiceNr]==true)then begin testf = false; end;
-									
+				if(ARr.BookRVal<=0)then begin testf = false; end;
+				if(invusedold[ARr.InvoiceNr])then begin
+					if(ARr.BookRVal<=invusedoldsum[ARr.InvoiceNr])then begin
+						testf = false;
+					end;
+				end;
+						
 				if(testf)then begin
 					if(remsum>0)then begin
 						clearrow(IPr,IPrw,1);
@@ -435,17 +508,33 @@ begin
 						if(IPrw.BankVal>=remsum)then begin
 							IPrw.BankVal = remsum;
 							IPrw.RecVal = remsum;
+							if(invusedold[ARr.InvoiceNr])then begin
+								if((ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])>0 and (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])<remsum)then begin
+									IPrw.BankVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+									IPrw.RecVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];	
+									remsum = remsum - ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+								end else begin
+									remsum = 0;
+								end;
+							end else begin
+								remsum = 0;
+							end;
 							IPrw.RecCurncy = CurncyCode;
 							IPrw.BankCurncy = CurncyCode;
 							IPrw.PayDate = IPr.TransDate;
 							matrowput(IPr,k,IPrw);
 							IPVc_PasteRecVal(IPr,k);
 							matrowget(IPr,k,IPrw);
-							remsum = 0;
 						end;
 						if(IPrw.RecVal<remsum)then begin
 							IPrw.BankVal = IPrw.RecVal;
 							IPrw.RecVal = IPrw.RecVal;
+							if(invusedold[ARr.InvoiceNr])then begin
+								if((ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])>0 and (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])<remsum)then begin
+									IPrw.BankVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+									IPrw.RecVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];	
+								end;
+							end;
 							IPrw.RecCurncy = CurncyCode;
 							IPrw.BankCurncy = CurncyCode;
 							IPrw.PayDate = IPr.TransDate;
@@ -466,7 +555,7 @@ begin
 		ARr.CustCode = "";
 		while(loopkey("CustCode",ARr,1,TrHs))begin												
 			if(TrHs)then begin
-				if(remsum>0)then begin
+				if(remsum>0 and ARr.BookRVal>0)then begin
 					primsearch = false;
 					if(BISb.DefSearchInv==0)then begin
 						primsearch = setinset(ARr.InvoiceNr,instr);
@@ -486,6 +575,11 @@ begin
 					
 					testf = primsearch;
 					if(invused[ARr.InvoiceNr]==true)then begin testf = false; end;
+					if(invusedold[ARr.InvoiceNr])then begin
+						if(ARr.BookRVal<=invusedoldsum[ARr.InvoiceNr])then begin
+							testf = false;
+						end;
+					end;
 					
 					if(testf)then begin
 						clearrow(IPr,IPrw,1);
@@ -505,6 +599,17 @@ begin
 						if(IPrw.BankVal>=remsum)then begin
 							IPrw.BankVal = remsum;
 							IPrw.RecVal = remsum;
+							if(invusedold[ARr.InvoiceNr])then begin
+								if((ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])>0 and (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])<remsum)then begin
+									IPrw.BankVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+									IPrw.RecVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];	
+									remsum = remsum - ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+								end else begin
+									remsum = 0;
+								end;
+							end else begin
+								remsum = 0;
+							end;
 							IPrw.RecCurncy = CurncyCode;
 							IPrw.BankCurncy = CurncyCode;
 							IPrw.PayDate = IPr.TransDate;
@@ -512,11 +617,16 @@ begin
 							matrowput(IPr,k,IPrw);
 							IPVc_PasteRecVal(IPr,k);
 							matrowget(IPr,k,IPrw);
-							remsum = 0;
 						end;
 						if(IPrw.RecVal<remsum)then begin
 							IPrw.BankVal = IPrw.RecVal;
 							IPrw.RecVal = IPrw.RecVal;
+							if(invusedold[ARr.InvoiceNr])then begin
+								if((ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])>0 and (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])<remsum)then begin
+									IPrw.BankVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+									IPrw.RecVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];	
+								end;
+							end;
 							IPrw.RecCurncy = CurncyCode;
 							IPrw.BankCurncy = CurncyCode;
 							IPrw.PayDate = IPr.TransDate;
@@ -537,7 +647,7 @@ begin
 		ARr.CustCode = "";
 		while(loopkey("CustCode",ARr,1,TrHs))begin												
 			if(TrHs)then begin
-				if(remsum>0)then begin
+				if(remsum>0 and ARr.BookRVal>0)then begin
 					primsearch = false;
 					if(BISb.DefSearchInv==1)then begin
 						primsearch = setinset(ARr.InvoiceNr,instr);
@@ -557,6 +667,11 @@ begin
 					
 					testf = primsearch;
 					if(invused[ARr.InvoiceNr]==true)then begin testf = false; end;
+					if(invusedold[ARr.InvoiceNr])then begin
+						if(ARr.BookRVal<=invusedoldsum[ARr.InvoiceNr])then begin
+							testf = false;
+						end;
+					end;
 					
 					if(testf)then begin
 						clearrow(IPr,IPrw,1);
@@ -576,6 +691,17 @@ begin
 						if(IPrw.BankVal>=remsum)then begin
 							IPrw.BankVal = remsum;
 							IPrw.RecVal = remsum;
+							if(invusedold[ARr.InvoiceNr])then begin
+								if((ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])>0 and (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])<remsum)then begin
+									IPrw.BankVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+									IPrw.RecVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];	
+									remsum = remsum - ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+								end else begin
+									remsum = 0;
+								end;
+							end else begin
+								remsum = 0;
+							end;
 							IPrw.RecCurncy = CurncyCode;
 							IPrw.BankCurncy = CurncyCode;
 							IPrw.PayDate = IPr.TransDate;
@@ -583,11 +709,16 @@ begin
 							matrowput(IPr,k,IPrw);
 							IPVc_PasteRecVal(IPr,k);
 							matrowget(IPr,k,IPrw);
-							remsum = 0;
 						end;
 						if(IPrw.RecVal<remsum)then begin
 							IPrw.BankVal = IPrw.RecVal;
 							IPrw.RecVal = IPrw.RecVal;
+							if(invusedold[ARr.InvoiceNr])then begin
+								if((ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])>0 and (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])<remsum)then begin
+									IPrw.BankVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+									IPrw.RecVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];	
+								end;
+							end;
 							IPrw.RecCurncy = CurncyCode;
 							IPrw.BankCurncy = CurncyCode;
 							IPrw.PayDate = IPr.TransDate;

@@ -644,11 +644,12 @@ global updating procedure DelAllDsm()
 begin
 	record SEBbankImportVc SBIr;
 	record SwedbankImportVc SWIr;
+	record LuminorImportVc LRIr;
 	record IPVc IPr;
 	
-	while(loopmain(SWIr,1,true))begin
-		recorddelete(SWIr);
-		stepback(SWIr);
+	while(loopmain(LRIr,1,true))begin
+		recorddelete(LRIr);
+		stepback(LRIr);
 	end;
 	
 	while(loopmain(IPr,1,true))begin
