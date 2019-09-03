@@ -262,6 +262,7 @@ begin
 			For(i=0;i<mtrw;i=i+1) begin
 	  		matrowget(oldIPVc,i,oldIPrw);
 	  		if(oldIPrw.InvoiceNr>-1)then begin
+	  			//invused[oldIPrw.InvoiceNr] = true;// Edit ************************** BPI Ukraine - KramarAlexandr - Monday, 2 September 2019 10:52:39
 	  			invusedold[oldIPrw.InvoiceNr] = true;
 	  			invusedoldsum[oldIPrw.InvoiceNr] = invusedoldsum[oldIPrw.InvoiceNr] + oldIPrw.RecVal;
 	  		end;
@@ -332,7 +333,7 @@ begin
 								if((ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])>0 and (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])<remsum)then begin
 									IPrw.BankVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
 									IPrw.RecVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];	
-									remsum = remsum - ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+									remsum = remsum - (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr]);
 								end else begin
 									remsum = 0;
 								end;
@@ -427,7 +428,7 @@ begin
 								if((ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])>0 and (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])<remsum)then begin
 									IPrw.BankVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
 									IPrw.RecVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];	
-									remsum = remsum - ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+									remsum = remsum - (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr]);
 								end else begin
 									remsum = 0;
 								end;
@@ -512,7 +513,7 @@ begin
 								if((ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])>0 and (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])<remsum)then begin
 									IPrw.BankVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
 									IPrw.RecVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];	
-									remsum = remsum - ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+									remsum = remsum - (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr]);
 								end else begin
 									remsum = 0;
 								end;
@@ -603,7 +604,7 @@ begin
 								if((ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])>0 and (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])<remsum)then begin
 									IPrw.BankVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
 									IPrw.RecVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];	
-									remsum = remsum - ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+									remsum = remsum - (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr]);
 								end else begin
 									remsum = 0;
 								end;
@@ -695,7 +696,7 @@ begin
 								if((ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])>0 and (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr])<remsum)then begin
 									IPrw.BankVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
 									IPrw.RecVal = ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];	
-									remsum = remsum - ARr.BookRVal-invusedoldsum[ARr.InvoiceNr];
+									remsum = remsum - (ARr.BookRVal-invusedoldsum[ARr.InvoiceNr]);
 								end else begin
 									remsum = 0;
 								end;
@@ -823,7 +824,6 @@ begin
 							primsearch = StringInText(APr.InvoiceNr,Letr) and nonblank(APr.InvoiceNr);
 						end;
 					end;
-					logtext(0,origcomm & " " & primsearch);
 					if(primsearch)then begin
 						clearrow(OPr,OPrw,1);
 						OPrw.VISerNr = APr.SerNr;
